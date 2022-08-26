@@ -6,7 +6,6 @@ import classes from "./dev.module.css";
 import { DataStore } from "mosfez-datastore";
 
 const store = new DataStore();
-console.log("store", store);
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -14,6 +13,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <Main />
   </React.StrictMode>
 );
+
+const handleClick = async () => {
+  console.log("go");
+  await store.init();
+  console.log("init");
+  const thing = await store.googleApi.listFiles();
+  console.log("thing", thing);
+};
 
 function Main() {
   return (
@@ -27,6 +34,7 @@ function Main() {
           github repo
         </a>
       </ListHeader>
+      <div onClick={handleClick}>click</div>
     </div>
   );
 }
