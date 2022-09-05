@@ -50,5 +50,10 @@
   "sideEffects": false,
   "files": [
     "datastore.*"
-  ]
+  ],
+  "dependencies": {
+    "firebase": "^9.9.3",
+    "idb-keyval": "^6.2.0",
+    "valtio": "^1.6.4"
+  }
 }
