@@ -1,58 +1,65 @@
-import { get, set, keys } from "idb-keyval";
-// import { base64ToBlob } from "./convert";
+export {
+  base64ToBlob,
+  blobToStoredArrayBuffer,
+  storedArrayBufferToBlob,
+  blobToBase64,
+} from "./convert";
+// import { IdbStore } from "./stores/idb-store";
+import { FirebaseStore } from "./stores/firebase-store";
 
 export class DataStore<D> {
-  private _appId = "";
-  idbPrefix = "mosfez";
+  // private _idbStore: IdbStore<D>;
+  private _firebaseStore: FirebaseStore<D>;
 
   constructor(appId: string) {
-    this._appId = appId;
+    // this._idbStore = new IdbStore(appId);
+    this._firebaseStore = new FirebaseStore(appId);
+  }
+
+  private validateProjectId(projectId: string): void {
+    if (projectId.trim() === "") {
+      throw new Error(`Invalid project id`);
+    }
+  }
+
+  private validateAssetName(assetName: string): void {
+    if (assetName.trim() === "") {
+      throw new Error(`Invalid asset name`);
+    }
+  }
+
+  async signIn(): Promise<void> {
+    return this._firebaseStore.signIn();
   }
 
   async listProjects(): Promise<string[]> {
-    const projectIds = (await keys())
-      .map((name) => `${name}`.split("/"))
-      .filter(
-        ([idbPrefix, appId, , type]) =>
-          idbPrefix === this.idbPrefix &&
-          appId === this._appId &&
-          type === "data"
-      )
-      .map((parts) => parts[2]);
-
-    return Array.from(new Set(projectIds));
+    return this._firebaseStore.listProjects();
   }
 
   async listProjectAssets(projectId: string): Promise<string[]> {
-    const projectIds = (await keys())
-      .map((name) => `${name}`.split("/"))
-      .filter(
-        ([idbPrefix, appId, thisProjectId, type]) =>
-          idbPrefix === this.idbPrefix &&
-          appId === this._appId &&
-          projectId === thisProjectId &&
-          type === "asset"
-      )
-      .map((parts) => parts[4]);
-
-    return Array.from(new Set(projectIds));
+    this.validateProjectId(projectId);
+    return this._firebaseStore.listProjectAssets(projectId);
   }
 
-  async loadProjectData(projectId: string): Promise<D> {
-    const result = await get(
-      `${this.idbPrefix}/${this._appId}/${projectId}/data`
-    );
-    return result;
+  async loadProjectData(projectId: string): Promise<D | null> {
+    this.validateProjectId(projectId);
+    return this._firebaseStore.loadProjectData(projectId);
   }
 
-  async loadProjectAssets(projectId: string): Promise<D> {
-    const result = await get(
-      `${this.idbPrefix}/${this._appId}/${projectId}/data`
-    );
-    return result;
+  async loadProjectAsset(projectId: string, assetName: string): Promise<Blob> {
+    this.validateProjectId(projectId);
+    this.validateAssetName(assetName);
+    return this._firebaseStore.loadProjectAsset(projectId, assetName);
   }
 
   async saveProjectData(projectId: string, data: D): Promise<void> {
-    await set(`${this.idbPrefix}/${this._appId}/${projectId}/data`, data);
+    this.validateProjectId(projectId);
+    return this._firebaseStore.saveProjectData(projectId, data);
+  }
+
+  async saveProjectAsset(projectId: string, assetName: string, blob: Blob) {
+    this.validateProjectId(projectId);
+    this.validateAssetName(assetName);
+    return this._firebaseStore.saveProjectAsset(projectId, assetName, blob);
   }
 }
