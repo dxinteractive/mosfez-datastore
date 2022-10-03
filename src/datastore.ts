@@ -4,16 +4,17 @@ export {
   storedArrayBufferToBlob,
   blobToBase64,
 } from "./convert";
-// import { IdbStore } from "./stores/idb-store";
+
+import { IdbStore } from "./stores/idb-store";
 import { FirebaseStore } from "./stores/firebase-store";
 
 export class DataStore<D> {
-  // private _idbStore: IdbStore<D>;
-  private _firebaseStore: FirebaseStore<D>;
+  idbStore: IdbStore<D>;
+  firebaseStore: FirebaseStore<D>;
 
   constructor(appId: string) {
-    // this._idbStore = new IdbStore(appId);
-    this._firebaseStore = new FirebaseStore(appId);
+    this.idbStore = new IdbStore(appId);
+    this.firebaseStore = new FirebaseStore(appId);
   }
 
   private validateProjectId(projectId: string): void {
@@ -29,37 +30,37 @@ export class DataStore<D> {
   }
 
   async signIn(): Promise<void> {
-    return this._firebaseStore.signIn();
+    return this.firebaseStore.signIn();
   }
 
   async listProjects(): Promise<string[]> {
-    return this._firebaseStore.listProjects();
+    return this.firebaseStore.listProjects();
   }
 
   async listProjectAssets(projectId: string): Promise<string[]> {
     this.validateProjectId(projectId);
-    return this._firebaseStore.listProjectAssets(projectId);
+    return this.firebaseStore.listProjectAssets(projectId);
   }
 
   async loadProjectData(projectId: string): Promise<D | null> {
     this.validateProjectId(projectId);
-    return this._firebaseStore.loadProjectData(projectId);
+    return this.firebaseStore.loadProjectData(projectId);
   }
 
   async loadProjectAsset(projectId: string, assetName: string): Promise<Blob> {
     this.validateProjectId(projectId);
     this.validateAssetName(assetName);
-    return this._firebaseStore.loadProjectAsset(projectId, assetName);
+    return this.firebaseStore.loadProjectAsset(projectId, assetName);
   }
 
   async saveProjectData(projectId: string, data: D): Promise<void> {
     this.validateProjectId(projectId);
-    return this._firebaseStore.saveProjectData(projectId, data);
+    return this.firebaseStore.saveProjectData(projectId, data);
   }
 
   async saveProjectAsset(projectId: string, assetName: string, blob: Blob) {
     this.validateProjectId(projectId);
     this.validateAssetName(assetName);
-    return this._firebaseStore.saveProjectAsset(projectId, assetName, blob);
+    return this.firebaseStore.saveProjectAsset(projectId, assetName, blob);
   }
 }
